@@ -2,16 +2,15 @@
 <html lang="en">
 
 <head>
-<link rel="icon" href="https://imagensemoldes.com.br/wp-content/uploads/2020/04/Livro-Aberto-PNG.png">
+<link rel="icon" src="img/logo.png">
     <meta charset="utf-8">
-    <title>Magic Book Library</title>
+    <title>Banco | Tela principal</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
-    <script src="https://kit.fontawesome.com/be77d4a767.js" crossorigin="anonymous"></script>
 
     <!-- Favicon -->
-    <link href="img/favicon.ico" rel="icon">
+    <link href="img/logo.jpg" rel="icon">
 
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -34,27 +33,27 @@
 </head>
 
 <body>
+    <!-- Spinner Start -->
+    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
     <!-- Spinner End -->
 
 
     <!-- Navbar Start -->
     <nav class="navbar navbar-expand-lg bg-white navbar-light shadow sticky-top p-0">
         <a href="menuAdm.php" class="navbar-brand d-flex align-items-center px-4 px-lg-5">
-            <h2 class="m-0 text-primary"><img height="150" src="img/Logo.png"></h2>
+            <h2 class="m-0 text-primary"><img height="75" src="img/logo3.png"></h2>
         </a>
         <button type="button" class="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarCollapse">
             <div class="navbar-nav ms-auto p-4 p-lg-0">
-                <a href="menuAdm.php" class="nav-item nav-link active">Catálogo</a>
-                <a href="acervo.php" class="nav-item nav-link ">Acervo</a>
-                <a href="usuarios.php" class="nav-item nav-link ">Usuários</a>
-                <a href="turma.php" class="nav-item nav-link ">Turmas</a>
-                <a href="relatorio.php" class="nav-item nav-link">Empréstimos</a>
-                <a href="clube.php" class="nav-item nav-link ">Clube do Livro</a>
-                <a href="hora.php" class="nav-item nav-link ">Hora da Leitura</a>
-                <a href="index.php" class="nav-item nav-link">Acessos</a>
+                <a href="hora.php" class="nav-item nav-link ">Nome do Gerente</a>
+                <a href="index.php" class="nav-item nav-link">Sair</a>
             </div>
         </div>
     </nav>
@@ -66,7 +65,7 @@
         <div class="container py-5">
             <div class="row justify-content-center">
                 <div class="col-lg-10 text-center">
-                    <h1 class="display-3 text-white animated slideInDown">Catálogo</h1>
+                    <h1 class="display-3 text-white animated slideInDown">Tela Principal</h1>
                     <nav aria-label="breadcrumb"></ol>
                     </nav>
                 </div>
@@ -77,15 +76,16 @@
 <!-- About Start -->
     <!-- About End -->
 
-    <!-- Team Start -->
-    <div class="container-xxl py-5">
+    <!-- Team Start --> <div class="container-xxl py-5 category">
         <div class="container">
             <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
-                <h6 class="section-title bg-white text-center text-primary px-3">Livros</h6>
+                <h6 class="section-title bg-white text-center text-primary px-3">Clientes</h6>
+                <h1 class="mb-5">Gerenciar Clientes</h1>
             </div>
             <div class="row g-4">
             <?php
-// Conexão com o banco de dados
+include_once('funcoesJS.php');
+
 $servername = "127.0.0.1";
 $username = "root";
 $password = "root";
@@ -97,110 +97,179 @@ if ($conn->connect_error) {
     die("Falha na conexão com o banco de dados: " . $conn->connect_error);
 }
 
-// Verificar se o formulário de pesquisa foi enviado
-if (isset($_GET['pesquisa'])) {
-    $pesquisa = $_GET['pesquisa'];
+// Verificar se a pesquisa foi enviada
+if (isset($_GET['search'])) {
+    $search = $_GET['search'];
 
-    // Consulta para selecionar itens do acervo com base na pesquisa
-    $sql = "SELECT * FROM acervo WHERE nome LIKE '%$pesquisa%' OR genero LIKE '%$pesquisa%' OR autor LIKE '%$pesquisa%' OR isbn LIKE '%$pesquisa%' ORDER BY nome";
-} else if (isset($_GET['genero'])) {
-    $generoSelecionado = $_GET['genero'];
-
-    if ($generoSelecionado != '') {
-        if ($generoSelecionado == 'Todos') {
-            // Consulta para selecionar todos os itens do acervo, ordenados pelo nome
-            $sql = "SELECT * FROM acervo ORDER BY nome";
-        } else {
-            // Consulta para selecionar itens do acervo com base no gênero selecionado, ordenados pelo nome
-            $sql = "SELECT * FROM acervo WHERE genero LIKE '$generoSelecionado' ORDER BY nome";
-        }
-    } else {
-        // Consulta para selecionar todos os itens do acervo, ordenados pelo nome
-        $sql = "SELECT * FROM acervo ORDER BY nome";
-    }
+    // Consulta para selecionar os usuários que correspondem à pesquisa
+    $sql = "SELECT * FROM clientes WHERE nome LIKE '%$search%' OR turma LIKE '%$search%' OR email LIKE '%$search%' OR cpf LIKE '%$search%' ORDER BY nome";
 } else {
-    // Consulta para selecionar todos os itens do acervo, ordenados pelo nome
-    $sql = "SELECT * FROM acervo ORDER BY nome";
+    // Consulta para selecionar todos os usuários
+    $sql = "SELECT * FROM usuario ORDER BY nome";
 }
 
 $result = $conn->query($sql);
 
 if ($result->num_rows > 0) {
-    // Exibir os itens do acervo
+    echo '<div class="container">';
+    echo '<h2 style="margin-bottom: 20px;">Lista de ' . $result->num_rows . ' Clientes</h2>';
 
-    // Formulário de pesquisa
-    echo '<form method="GET" action="menuAdm.php">';
+    // Adicionar barra de pesquisa com ícone de lupa
+    echo '<form method="GET" action="usuarios.php">';
     echo '<div style="display: flex; align-items: center;">';
-    echo '<input type="text" name="pesquisa" placeholder="Pesquisar livro">';
+    echo '<input type="text" name="search" placeholder="Pesquisar usuário">';
     echo '<button type="submit" style="background-color: #565d88; border: none; cursor: pointer; padding:10px; margin-left: 0px;"><i class="fas fa-search" style="color: white;"></i></button>';
     echo '</div>';
     echo '</form>';
 
-    // Botões de filtro por gênero
-    echo '<div style="margin-top: 20px; display: flex; justify-content: center;">';
-    echo '<form method="GET" action="menuAdm.php">';
-    
-    echo '<button type="submit" name="genero" value="Todos" style="background-color: #5a5c87; border: 1px solid #ccc; border-radius: 5px; padding: 5px 10px; margin-right: 10px; color: white;">Todos</button>';
-    echo '<button type="submit" name="genero" value="Educacional" style="background-color: #5a5c87; border: 1px solid #ccc; border-radius: 5px; padding: 5px 10px; margin-right: 10px;">Educacional</button>';
-    echo '<button type="submit" name="genero" value="Biografia" style="background-color: #5a5c87; border: 1px solid #ccc; border-radius: 5px; padding: 5px 10px; margin-right: 10px;">Biografia</button>';
-    echo '<button type="submit" name="genero" value="Romance" style="background-color: #5a5c87; border: 1px solid #ccc; border-radius: 5px; padding: 5px 10px; margin-right: 10px;">Romance</button>';
-    echo '<button type="submit" name="genero" value="Fantasia" style="background-color: #5a5c87; border: 1px solid #ccc; border-radius: 5px; padding: 5px 10px; margin-right: 10px;">Fantasia</button>';
-    echo '<button type="submit" name="genero" value="Aventura" style="background-color: #5a5c87; border: 1px solid #ccc; border-radius: 5px; padding: 5px 10px; margin-right: 10px;">Aventura</button>';
-    echo '<button type="submit" name="genero" value="Ficção Científica" style="background-color: #5a5c87; border: 1px solid #ccc; border-radius: 5px; padding: 5px 10px; margin-right: 10px;">Ficção</button>';
-    echo '<button type="submit" name="genero" value="Suspense" style="background-color: #5a5c87; border: 1px solid #ccc; border-radius: 5px; padding: 5px 10px; margin-right: 10px;">Suspense</button>';
-    echo '<button type="submit" name="genero" value="Drama" style="background-color: #5a5c87; border: 1px solid #ccc; border-radius: 5px; padding: 5px 10px; margin-right: 10px;">Drama</button>';
-    echo '<button type="submit" name="genero" value="Terror" style="background-color: #5a5c87; border: 1px solid #ccc; border-radius: 5px; padding: 5px 10px; margin-right: 10px;">Terror</button>';
-    echo '<button type="submit" name="genero" value="Literatura Infantil" style="background-color: #5a5c87; border: 1px solid #ccc; border-radius: 5px; padding: 5px 10px; margin-right: 10px;">Infantil</button>';
-    // Adicione mais botões de acordo com os gêneros desejados
-    echo '</form>';
-    echo '</div>';
+    // Adicionar espaço entre a barra de pesquisa e a lista de usuários
+    echo '<div style="margin-top: 20px;"></div>';
+
+    echo '<ul>';
 
     while ($row = $result->fetch_assoc()) {
         $id = $row["id"];
         $nome = $row["nome"];
-        $autor = $row["autor"];
-        $anoPublicado = $row["anoPublicado"];
-        $capaLivro = $row["capaLivro"];
+        $turma = $row["turma"];
+        $email = $row["email"];
+        $cpf = $row["cpf"];
 
-        echo '<div class="col-lg-3 col-md-6 wow fadeInUp d-flex justify-content-center" data-wow-delay="0.3s">';
-        echo '<div class="bg-light" style="width: 250px;">';
-        echo '<div class="position-relative overflow-hidden">';
-        echo '<img class="img-fluid mx-auto d-block" src="img/' . $capaLivro . '" alt="" style="width: 100%;">';
-        echo '</div>';
-        echo '<div class="text-center p-4 pb-0">';
-        echo '<h3 class="mb-0"></h3>';
-        echo '<h5 class="mb-4">' . $nome . '</h5>';
-        echo '</div>';
-        echo '<div class="d-flex justify-content-center" style="padding-bottom: 10px;">';
-        echo '<a href="alugar2.php?id=' . $id . '" class="flex-shrink-0 btn btn-sm btn-primary" style="border-radius: 30px;">Mais Detalhes</a>';
-        echo '</div>';
-        echo '<div class="d-flex border-top">';
-        echo '<small class="flex-fill text-center border-end py-2"><i class="fa fa-user-tie text-primary me-2"></i>' . $autor . '</small>';
-        echo '<small class="flex-fill text-center py-2"><i class="fa-solid fa-calendar-days text-primary me-2"></i>' . $anoPublicado . '</small>';
-        echo '</div>';
-        echo '</div>';
-        echo '</div>';
+        echo '<li>';
+        echo '<span style="margin-right: 10px;">Nome: ' . $nome . '</span>';
+        echo '<span style="margin-right: 10px;">- Turma: ' . $turma . '</span>';
+        echo '<span style="margin-right: 10px;">- Email: ' . $email . '</span>';
+        echo '<span style="margin-right: 10px;">- CPF: ' . $cpf . '</span>';
+        echo '<a href="atualizarUsuario.php?id=' . $id . '"><i class="fas fa-edit"></i></a>';
+
+        // Adicionar a mensagem de confirmação antes de deletar o usuário
+        echo '<a href="deletarUsuario.php?id=' . $id . '" onclick="return confirm(\'Tem certeza de que deseja deletar o usuário?\')" style="margin-left: 10px;"><i class="fas fa-trash"></i></a>';
+
+        echo '</li>';
     }
+
+    echo '</ul>';
+    echo '</div>';
+
+    echo '<title>Formulário de Registro</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    
+    <div style="display: flex; justify-content: center; padding-bottom: 20px; padding-top: 15px;">
+        <form style="background-color: #f7f7f7; box-shadow: 0px 0px 15px #666; width: 55%; border-radius: 15px;" method="post" action="adicionarUsuario.php" id="formlogin" name="formlogin">
+            <div style="padding: 50px; display: flex; flex-wrap: wrap;">
+                <div style="padding-bottom: 25px; width: 100%; display: block;">
+                    <h2 style="display: flex; justify-content: center; color: rgba(17, 27, 88, 0.7);">Adicionar Novo Usuário</h2>
+                </div>
+                <div style="display: flex; justify-content: space-between; width: 100%;">
+                <div style="width: 48%; padding-bottom: 12px;">
+                    <label style="float: left; padding-bottom: 5px;" for="nome">Nome Completo</label><br>
+                    <input style="display: block; border: 2px solid #ccc; width: 100%; height: 55px; padding: 10px; margin: 10px; border-radius: 5px;" placeholder="Nome" type="text" id="nome" name="nome" required>
+                </div>
+                <div style="width: 48%; padding-bottom: 12px;">
+                    <label style="float: left; padding-bottom: 5px; " for="cpf">CPF</label><br>
+                    <input style="display: block; border: 2px solid #ccc; width: 100%; height: 55px; padding: 10px; margin: 10px; border-radius: 5px;" placeholder="CPF" onkeyup="formatarCPF()" type="text" id="cpf" name="cpf" required>
+                </div>
+                </div>
+                <div style="width: 100%; padding-bottom: 12px;">
+                    <label style="float: left; padding-bottom: 5px;" for="email">Email</label><br>
+                    <input style="display: block; border: 2px solid #ccc; width: 100%; height: 55px; padding: 10px; margin: 10px; border-radius: 5px;" placeholder="Email" type="email" id="email" name="email" required>
+                </div>
+                <div style="display: flex; justify-content: space-between; width: 100%;">
+            <div style="width: 48%; padding-bottom: 12px;">
+                <label style="float: left; padding-bottom: 5px; " for="serie">Série</label><br>
+                <select style="display: block; border: 2px solid #ccc; width: 100%; height: 55px; padding: 10px; margin: 10px; border-radius: 5px;" id="serie" name="serie" required>
+                    <option value="" disabled selected>Selecione sua série</option>
+                    <option value="1º Ano - EF">1º Ano - EF</option>
+                    <option value="2º Ano - EF">2º Ano - EF</option>
+                    <option value="3º Ano - EF">3º Ano - EF</option>
+                    <option value="4º Ano - EF">4º Ano - EF</option>
+                    <option value="5º Ano - EF">5º Ano - EF</option>
+                    <option value="6º Ano - EF">6º Ano - EF</option>
+                    <option value="7º Ano - EF">7º Ano - EF</option>
+                    <option value="8º Ano - EF">8º Ano - EF</option>
+                    <option value="9º Ano - EF">9º Ano - EF</option>
+                    <option value="1º Ano - EM">1º Ano - EM</option>
+                    <option value="2º Ano - EM">2º Ano - EM</option>
+                    <option value="3º Ano - EM">3º Ano - EM</option>
+                </select>
+            </div>
+            <div style="width: 48%; padding-bottom: 12px;">
+                <label style="float: left; padding-bottom: 5px;" for="turma">Turma</label><br>
+                <select style="display: block; border: 2px solid #ccc; width: 100%; height: 55px; padding: 10px; margin: 10px; border-radius: 5px;" id="turma" name="turma" required>';
+                
+?>
+                <?php
+// Consulta para selecionar todos os nomes de turma, ordenados pelo nome
+$sql_turma = "SELECT * FROM turma ORDER BY turma";
+$result_turma = $conn->query($sql_turma);
+
+if ($result_turma->num_rows > 0) {
+    while ($turma_row = $result_turma->fetch_assoc()) {
+        echo '<option value="' . $turma_row['turma'] . '">' . $turma_row['turma'] . '</option>';
+    }
+}
+
+// Fechar o resultado do cursor
+$result_turma->free_result();
+
+?>
+<?php
+echo ' </select>
+            </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; width: 100%;">
+                <div style="width: 48%; padding-bottom: 12px;">
+                    <label style="float: left; padding-bottom: 5px; " for="matricula">Matrícula</label><br>
+                    <input style="display: block; border: 2px solid #ccc; width: 100%; height: 55px; padding: 10px; margin: 10px; border-radius: 5px;" placeholder="Matrícula" type="number" id="matricula" name="matricula" required>
+                </div>
+                <div style="width: 48%; padding-bottom: 12px;">
+                    <label style="float: left; padding-bottom: 5px; " for="idade">Idade</label><br>
+                    <input style="display: block; border: 2px solid #ccc; width: 100%; height: 55px; padding: 10px; margin: 10px; border-radius: 5px;" placeholder="Idade" type="number" id="idade" name="idade" required>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; width: 100%;">
+                <div style="width: 48%; padding-bottom: 12px;">
+                    <label style="float: left; padding-bottom: 5px; " for="telefone">Telefone</label><br>
+                    <input style="display: block; border: 2px solid #ccc; width: 100%; height: 55px; padding: 10px; margin: 10px; border-radius: 5px;" placeholder="Telefone" onkeyup="formatarTelefone()" type="tel" id="telefone" name="telefone" required>
+                </div>
+                <div style="width: 48%; padding-bottom: 12px;">
+                    <label style="float: left; padding-bottom: 5px; " for="endereco">Endereço</label><br>
+                    <input style="display: block; border: 2px solid #ccc; width: 100%; height: 55px; padding: 10px; margin: 10px; border-radius: 5px;" placeholder="Endereço" type="text" id="endereco" name="endereco" required>
+                </div>
+            </div>
+            <div style="width: 100%; padding-bottom: 12px;">
+                <label style="float: left; padding-bottom: 5px;" for="senha">Senha</label><br>
+                <div style="position: relative;">
+                    <input style="display: block; border: 2px solid #ccc; width: 100%; height: 55px; padding: 10px; margin: 10px; border-radius: 5px;" placeholder="Senha" type="text" id="senha" name="senha" required>
+                    <span style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;" >
+                    </span>
+                </div>
+            </div>
+            <div style="width: 100%; padding-bottom: 12px;">
+                <div style="width: 100%; display: flex; justify-content: flex-end; align-items: center;">
+                    <button type="submit">Adicionar</button>
+                </div>
+            </div>
+        </form>
+    </div>';
 } else {
-    echo "Nenhum item encontrado no acervo.";
+    echo "Nenhum usuário encontrado.";
 }
 
 // Fechar a conexão com o banco de dados
 $conn->close();
 ?>
-
-            </div>
+</div>
+</div>
         </div>
     </div>
-    <!-- Team End -->
 
-    <!-- Footer Start -->
-    <div class="container-fluid bg-dark text-light footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
+   <!-- Footer Start -->
+   <div class="container-fluid bg-dark text-light footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
     <div class="container py-4">
         <div class="row g-5">
             <div class="col-lg-6 col-md-6 text-start">
                 <h4 class="text-white mb-3">Obrigado!</h4>
-                <p class="mb-2"><i class=""></i>Agradecemos por nos visitar! Esperamos que você retorne sempre à Magic Book Library para explorar novos livros e continuar desfrutando da nossa vasta seleção. Estamos aqui para acompanhá-lo em sua jornada de leitura.</p>
+                <p class="mb-2"><i class=""></i>Agradecemos por escolher o Banco Vasco BMG! Esperamos que você retorne sempre para explorar nossos serviços financeiros e continue desfrutando da ampla gama de opções que oferecemos. Estamos aqui para acompanhá-lo em sua jornada financeira.</p>
                 <p class="mb-2"><i class=""></i>Volte sempre!</p>
             </div>
             <div class="col-lg-3 col-md-6 text-start">

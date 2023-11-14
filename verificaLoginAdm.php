@@ -7,7 +7,7 @@
         $hostname = "127.0.0.1";
         $user = "root";
         $password = "root";
-        $database = "projeto_biblioteca";
+        $database = "banco";
 
         $conexao = new mysqli($hostname, $user, $password, $database);
 
@@ -16,27 +16,28 @@
             exit();
         } else {
             // Evita caracteres especiais (SQL Inject)
-            $nome = $conexao->real_escape_string($_POST['nome']);
+            $email = $conexao->real_escape_string($_POST['email']);
             $senha = $conexao->real_escape_string($_POST['senha']);
 
-            $sql = "SELECT `id`, `nome` FROM `adm`
-					WHERE `nome` = '" . $nome . "'
-					AND `senha` = '" . $senha . "'
-					AND ativo = 's';";
+            $sql = "SELECT `idGerente`, `email` FROM `gerentes`
+					WHERE `email` = '" . $email . "'
+					AND `senha` = '" . $senha . "';";
 
             $resultado = $conexao->query($sql);
 
             if ($resultado->num_rows != 0) {
                 $row = $resultado->fetch_array();
-                $_SESSION['id'] = $row[0];
+                $_SESSION['idGerente'] = $row[0];
                 $_SESSION['nome'] = $row[1];
+                $_SESSION['email'] = $row[2];
+                $_SESSION['senha'] = $row[3];
                 $conexao->close();
 
                 header('Location: menuAdm.php');
                 exit();
             } else {
                 $conexao->close();
-                header('Location: loginAdm.php');
+                header('Location: index.php');
                 exit();
             }
         }
