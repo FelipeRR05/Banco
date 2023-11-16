@@ -87,7 +87,7 @@
     
     
         <center>
-<?php
+        <?php
 include_once('funcoesJS.php');
 ?>
     
@@ -190,5 +190,4 @@ include_once('funcoesJS.php');
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
 </body>
-
 </html>

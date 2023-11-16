@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
+<head><?php
+include('protect.php');
+?>
 <link rel="icon" src="img/logo.png">
     <meta charset="utf-8">
     <title>Banco | Tela principal</title>
@@ -34,15 +36,41 @@
 
 <body>
     <!-- Spinner Start -->
-    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-            <span class="sr-only">Loading...</span>
-        </div>
-    </div>
     <!-- Spinner End -->
 
 
     <!-- Navbar Start -->
+    <?php
+    
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
+$hostname = '127.0.0.1';
+$user = 'root';
+$password = 'root';
+$database = 'banco';
+
+$conexao = new mysqli($hostname, $user, $password, $database);
+if ($conexao->connect_errno) {
+    echo 'Falha na conexão: ' . $conexao->connect_error;
+    exit();
+} else {
+    // Obter o nome do gerente a partir das variáveis de sessão
+    $nomeGerente = isset($_SESSION['nome']) ? $_SESSION['nome'] : '';
+
+    // Restante do código permanece o mesmo
+}
+?>
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Administrativo</title>
+</head>
+<body>
     <nav class="navbar navbar-expand-lg bg-white navbar-light shadow sticky-top p-0">
         <a href="menuAdm.php" class="navbar-brand d-flex align-items-center px-4 px-lg-5">
             <h2 class="m-0 text-primary"><img height="75" src="img/logo3.png"></h2>
@@ -51,10 +79,13 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarCollapse">
-            <div class="navbar-nav ms-auto p-4 p-lg-0">
-                <a href="hora.php" class="nav-item nav-link ">Nome do Gerente</a>
-                <a href="index.php" class="nav-item nav-link">Sair</a>
-            </div>
+            <!-- Exibir o nome do gerente logado -->
+            <h1 class="navtxt"><?php echo $nomeGerente; ?></h1>
+        </div>
+        <div class="ms-auto d-flex align-items-center">
+            <form action="logout.php" method="POST">
+                <button type="submit" class="btn btn-danger">Sair</button>
+            </form>
         </div>
     </nav>
     <!-- Navbar End -->
@@ -89,7 +120,11 @@ include_once('funcoesJS.php');
 $servername = "127.0.0.1";
 $username = "root";
 $password = "root";
-$dbname = "projeto_biblioteca";
+$dbname = "banco";
+
+// Supondo que você tenha a informação do gerente logado armazenada em algum lugar, como $_SESSION
+// Substitua isso com a lógica real que você está usando para obter o id do gerente logado
+$idGerenteLogado = $_SESSION['idGerente'];
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
@@ -102,10 +137,10 @@ if (isset($_GET['search'])) {
     $search = $_GET['search'];
 
     // Consulta para selecionar os usuários que correspondem à pesquisa
-    $sql = "SELECT * FROM clientes WHERE nome LIKE '%$search%' OR turma LIKE '%$search%' OR email LIKE '%$search%' OR cpf LIKE '%$search%' ORDER BY nome";
+    $sql = "SELECT * FROM clientes WHERE (nome LIKE '%$search%' OR cartao LIKE '%$search%' OR email LIKE '%$search%' OR cpf LIKE '%$search%') AND idGerente = $idGerenteLogado ORDER BY nome";
 } else {
-    // Consulta para selecionar todos os usuários
-    $sql = "SELECT * FROM usuario ORDER BY nome";
+    // Consulta para selecionar todos os usuários do gerente logado
+    $sql = "SELECT * FROM clientes WHERE idGerente = $idGerenteLogado ORDER BY idCliente";
 }
 
 $result = $conn->query($sql);
@@ -115,10 +150,14 @@ if ($result->num_rows > 0) {
     echo '<h2 style="margin-bottom: 20px;">Lista de ' . $result->num_rows . ' Clientes</h2>';
 
     // Adicionar barra de pesquisa com ícone de lupa
-    echo '<form method="GET" action="usuarios.php">';
+    echo '<form method="GET" action="menuAdm.php">';
     echo '<div style="display: flex; align-items: center;">';
-    echo '<input type="text" name="search" placeholder="Pesquisar usuário">';
-    echo '<button type="submit" style="background-color: #565d88; border: none; cursor: pointer; padding:10px; margin-left: 0px;"><i class="fas fa-search" style="color: white;"></i></button>';
+    echo '<input type="text" name="search" placeholder="Pesquisar clientes">';
+    echo '<button type="submit" style="background-color: #565d88; border: none; cursor: pointer; padding:10px; margin-right: 5px;"><i class="fas fa-search" style="color: white;"></i></button>';
+    
+    // Botão de Cadastro
+    echo '<a href="cadastrarCliente.php" class="btn btn-primary btn-sm" style="background-color: #565d88; border-radius: 5px; "><i class="fas fa-plus"></i> Cadastrar Cliente</a>';
+    
     echo '</div>';
     echo '</form>';
 
@@ -128,131 +167,49 @@ if ($result->num_rows > 0) {
     echo '<ul>';
 
     while ($row = $result->fetch_assoc()) {
-        $id = $row["id"];
+        $idCliente = $row["idCliente"];
+        $idGerente = $row["idGerente"];
         $nome = $row["nome"];
-        $turma = $row["turma"];
-        $email = $row["email"];
         $cpf = $row["cpf"];
+        $email = $row["email"];
+        $telefone = $row["telefone"];
+        $cartao = $row["cartao"];
 
         echo '<li>';
+        echo '<span style="margin-right: 10px;">Número: ' . $idCliente . '</span>';
         echo '<span style="margin-right: 10px;">Nome: ' . $nome . '</span>';
-        echo '<span style="margin-right: 10px;">- Turma: ' . $turma . '</span>';
-        echo '<span style="margin-right: 10px;">- Email: ' . $email . '</span>';
-        echo '<span style="margin-right: 10px;">- CPF: ' . $cpf . '</span>';
-        echo '<a href="atualizarUsuario.php?id=' . $id . '"><i class="fas fa-edit"></i></a>';
-
-        // Adicionar a mensagem de confirmação antes de deletar o usuário
-        echo '<a href="deletarUsuario.php?id=' . $id . '" onclick="return confirm(\'Tem certeza de que deseja deletar o usuário?\')" style="margin-left: 10px;"><i class="fas fa-trash"></i></a>';
-
+        // Botão de Deletar
+        echo '<a href="deletarUsuario.php?id=' . $idCliente . '" class="btn btn-danger btn-sm" style="margin-right: 5px; margin-bottom: 5px; border-radius: 5px; background-color: #dc3545;" onclick="return confirm(\'Tem certeza de que deseja excluir o usuário?\')" onmouseover="this.style.backgroundColor=\'#c82333\'" onmouseout="this.style.backgroundColor=\'#dc3545\'"><i class="fas fa-trash"></i> Excluir</a>';
+        
+        // Botão de Visualizar (Editar)
+        echo '<a href="visualizarUsuario.php?id=' . $idCliente . '" class="btn btn-success btn-sm" style="margin-right: 5px; margin-bottom: 5px; border-radius: 5px; background-color: #28a745;" onmouseover="this.style.backgroundColor=\'#218838\'" onmouseout="this.style.backgroundColor=\'#28a745\'"><i class="fas fa-eye"></i> Visualizar</a>';
+        
         echo '</li>';
     }
 
     echo '</ul>';
     echo '</div>';
 
-    echo '<title>Formulário de Registro</title>
-    <link rel="stylesheet" type="text/css" href="style.css">
-    
-    <div style="display: flex; justify-content: center; padding-bottom: 20px; padding-top: 15px;">
-        <form style="background-color: #f7f7f7; box-shadow: 0px 0px 15px #666; width: 55%; border-radius: 15px;" method="post" action="adicionarUsuario.php" id="formlogin" name="formlogin">
-            <div style="padding: 50px; display: flex; flex-wrap: wrap;">
-                <div style="padding-bottom: 25px; width: 100%; display: block;">
-                    <h2 style="display: flex; justify-content: center; color: rgba(17, 27, 88, 0.7);">Adicionar Novo Usuário</h2>
-                </div>
-                <div style="display: flex; justify-content: space-between; width: 100%;">
-                <div style="width: 48%; padding-bottom: 12px;">
-                    <label style="float: left; padding-bottom: 5px;" for="nome">Nome Completo</label><br>
-                    <input style="display: block; border: 2px solid #ccc; width: 100%; height: 55px; padding: 10px; margin: 10px; border-radius: 5px;" placeholder="Nome" type="text" id="nome" name="nome" required>
-                </div>
-                <div style="width: 48%; padding-bottom: 12px;">
-                    <label style="float: left; padding-bottom: 5px; " for="cpf">CPF</label><br>
-                    <input style="display: block; border: 2px solid #ccc; width: 100%; height: 55px; padding: 10px; margin: 10px; border-radius: 5px;" placeholder="CPF" onkeyup="formatarCPF()" type="text" id="cpf" name="cpf" required>
-                </div>
-                </div>
-                <div style="width: 100%; padding-bottom: 12px;">
-                    <label style="float: left; padding-bottom: 5px;" for="email">Email</label><br>
-                    <input style="display: block; border: 2px solid #ccc; width: 100%; height: 55px; padding: 10px; margin: 10px; border-radius: 5px;" placeholder="Email" type="email" id="email" name="email" required>
-                </div>
-                <div style="display: flex; justify-content: space-between; width: 100%;">
-            <div style="width: 48%; padding-bottom: 12px;">
-                <label style="float: left; padding-bottom: 5px; " for="serie">Série</label><br>
-                <select style="display: block; border: 2px solid #ccc; width: 100%; height: 55px; padding: 10px; margin: 10px; border-radius: 5px;" id="serie" name="serie" required>
-                    <option value="" disabled selected>Selecione sua série</option>
-                    <option value="1º Ano - EF">1º Ano - EF</option>
-                    <option value="2º Ano - EF">2º Ano - EF</option>
-                    <option value="3º Ano - EF">3º Ano - EF</option>
-                    <option value="4º Ano - EF">4º Ano - EF</option>
-                    <option value="5º Ano - EF">5º Ano - EF</option>
-                    <option value="6º Ano - EF">6º Ano - EF</option>
-                    <option value="7º Ano - EF">7º Ano - EF</option>
-                    <option value="8º Ano - EF">8º Ano - EF</option>
-                    <option value="9º Ano - EF">9º Ano - EF</option>
-                    <option value="1º Ano - EM">1º Ano - EM</option>
-                    <option value="2º Ano - EM">2º Ano - EM</option>
-                    <option value="3º Ano - EM">3º Ano - EM</option>
-                </select>
-            </div>
-            <div style="width: 48%; padding-bottom: 12px;">
-                <label style="float: left; padding-bottom: 5px;" for="turma">Turma</label><br>
-                <select style="display: block; border: 2px solid #ccc; width: 100%; height: 55px; padding: 10px; margin: 10px; border-radius: 5px;" id="turma" name="turma" required>';
-                
-?>
-                <?php
-// Consulta para selecionar todos os nomes de turma, ordenados pelo nome
-$sql_turma = "SELECT * FROM turma ORDER BY turma";
-$result_turma = $conn->query($sql_turma);
-
-if ($result_turma->num_rows > 0) {
-    while ($turma_row = $result_turma->fetch_assoc()) {
-        echo '<option value="' . $turma_row['turma'] . '">' . $turma_row['turma'] . '</option>';
-    }
-}
-
-// Fechar o resultado do cursor
-$result_turma->free_result();
-
-?>
-<?php
-echo ' </select>
-            </div>
-            </div>
-            <div style="display: flex; justify-content: space-between; width: 100%;">
-                <div style="width: 48%; padding-bottom: 12px;">
-                    <label style="float: left; padding-bottom: 5px; " for="matricula">Matrícula</label><br>
-                    <input style="display: block; border: 2px solid #ccc; width: 100%; height: 55px; padding: 10px; margin: 10px; border-radius: 5px;" placeholder="Matrícula" type="number" id="matricula" name="matricula" required>
-                </div>
-                <div style="width: 48%; padding-bottom: 12px;">
-                    <label style="float: left; padding-bottom: 5px; " for="idade">Idade</label><br>
-                    <input style="display: block; border: 2px solid #ccc; width: 100%; height: 55px; padding: 10px; margin: 10px; border-radius: 5px;" placeholder="Idade" type="number" id="idade" name="idade" required>
-                </div>
-            </div>
-            <div style="display: flex; justify-content: space-between; width: 100%;">
-                <div style="width: 48%; padding-bottom: 12px;">
-                    <label style="float: left; padding-bottom: 5px; " for="telefone">Telefone</label><br>
-                    <input style="display: block; border: 2px solid #ccc; width: 100%; height: 55px; padding: 10px; margin: 10px; border-radius: 5px;" placeholder="Telefone" onkeyup="formatarTelefone()" type="tel" id="telefone" name="telefone" required>
-                </div>
-                <div style="width: 48%; padding-bottom: 12px;">
-                    <label style="float: left; padding-bottom: 5px; " for="endereco">Endereço</label><br>
-                    <input style="display: block; border: 2px solid #ccc; width: 100%; height: 55px; padding: 10px; margin: 10px; border-radius: 5px;" placeholder="Endereço" type="text" id="endereco" name="endereco" required>
-                </div>
-            </div>
-            <div style="width: 100%; padding-bottom: 12px;">
-                <label style="float: left; padding-bottom: 5px;" for="senha">Senha</label><br>
-                <div style="position: relative;">
-                    <input style="display: block; border: 2px solid #ccc; width: 100%; height: 55px; padding: 10px; margin: 10px; border-radius: 5px;" placeholder="Senha" type="text" id="senha" name="senha" required>
-                    <span style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;" >
-                    </span>
-                </div>
-            </div>
-            <div style="width: 100%; padding-bottom: 12px;">
-                <div style="width: 100%; display: flex; justify-content: flex-end; align-items: center;">
-                    <button type="submit">Adicionar</button>
-                </div>
-            </div>
-        </form>
-    </div>';
 } else {
-    echo "Nenhum usuário encontrado.";
+    echo '<div class="container">';
+    echo '<h2 style="margin-bottom: 20px;">Lista de ' . $result->num_rows . ' Clientes</h2>';
+
+    // Adicionar barra de pesquisa com ícone de lupa
+    echo '<form method="GET" action="menuAdm.php">';
+    echo '<div style="display: flex; align-items: center;">';
+    echo '<input type="text" name="search" placeholder="Pesquisar clientes">';
+    echo '<button type="submit" style="background-color: #565d88; border: none; cursor: pointer; padding:10px; margin-right: 5px;"><i class="fas fa-search" style="color: white;"></i></button>';
+    
+    // Botão de Cadastro
+    echo '<a href="cadastrarCliente.php" class="btn btn-primary btn-sm" style="background-color: #565d88; border-radius: 5px; "><i class="fas fa-plus"></i> Cadastrar Cliente</a>';
+    
+    echo '</div>';
+    echo '</form>';
+
+    // Adicionar espaço entre a barra de pesquisa e a lista de usuários
+    echo '<div style="margin-top: 20px;"></div>';
+
+    echo '<ul>';
 }
 
 // Fechar a conexão com o banco de dados
