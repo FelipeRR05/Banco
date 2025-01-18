@@ -1,1 +1,1 @@
-O projeto visa desenvolver um sistema de gestão bancária que permita aos funcionários cadastrar e gerenciar clientes, abrir contas correntes e gerenciar cartões, incluindo o cadastro e o bloqueio de novos cartões.
+O projeto consiste em um sistema de gestão bancária que permite os funcionários cadastrar e gerenciar clientes, abrir contas correntes e gerenciar cartões, incluindo o cadastro e o bloqueio de novos cartões.
